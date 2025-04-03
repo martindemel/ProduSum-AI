@@ -2,7 +2,17 @@
 
 Produsum AI is a modern web application that uses OpenAI's GPT-4o and DALL-E 3 to generate compelling product descriptions and visualizations. Perfect for marketing teams, e-commerce businesses, and content creators.
 
-![Produsum AI Demo](application.gif)
+![Produsum AI Demo](supporting_materials/application.gif)
+
+## Overview
+
+Produsum AI helps you create professional marketing content quickly and easily:
+
+![Main Interface](supporting_materials/mainscreen.png)
+
+Generate both text descriptions and images for your products:
+
+![Sample Generated Content](supporting_materials/sample_generated.png)
 
 ## Features
 
