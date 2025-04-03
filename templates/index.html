@@ -1,0 +1,3116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Produsum</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Socket.IO - Using specific 4.4.1 version for better compatibility -->
+  <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+  <!-- Deferred Bootstrap JavaScript loading -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+  <!-- Preconnect to external resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Font loading with text-rendering optimization -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    /* Use SF Pro Display font for Apple-like typography */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #f0f0f3 0%, #e7e7ec 100%);
+      color: #333;
+      letter-spacing: -0.01em;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Animated background elements */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+      z-index: -1;
+    }
+    
+    body::before {
+      top: -100px;
+      left: -100px;
+      animation: float1 25s infinite alternate ease-in-out;
+    }
+    
+    body::after {
+      bottom: -150px;
+      right: -50px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(220,220,230,0.5) 0%, rgba(255,255,255,0) 60%);
+      animation: float2 30s infinite alternate-reverse ease-in-out;
+    }
+    
+    @keyframes float1 {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(40px, 40px); }
+      100% { transform: translate(20px, 60px); }
+    }
+    
+    @keyframes float2 {
+      0% { transform: translate(0, 0); }
+      50% { transform: translate(-30px, -30px); }
+      100% { transform: translate(-50px, -20px); }
+    }
+    
+    /* Subtle grid pattern overlay */
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      z-index: -2;
+      pointer-events: none;
+    }
+    
+    /* Enhanced navigation bar with glass effect */
+    .navbar {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 15px 0;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .navbar .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      max-width: 1800px;
+      transition: max-width 0.3s ease;
+      padding: 0 20px;
+      gap: 20px; /* Add gap between elements */
+    }
+    
+    .navbar .container.two-column {
+      max-width: 1000px;
+    }
+    
+    .navbar .container.three-column {
+      max-width: 1800px;
+    }
+
+    .navbar-brand {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-left: auto;
+      position: relative;
+      min-width: 200px; /* Ensure minimum width for the elements */
+    }
+
+    .datetime-display {
+      display: inline-block;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.9rem;
+      color: #666;
+      margin: 0;
+      white-space: nowrap; /* Prevent wrapping */
+    }
+
+    .theme-toggle {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 5px;
+      margin: 0;
+      flex-shrink: 0; /* Prevent the toggle from shrinking */
+    }
+    
+    .navbar-brand {
+      margin: 0 auto;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: #000;
+    }
+    
+    /* Introduction section */
+    .intro {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 10px 20px;
+      max-width: 1800px;
+      margin-left: auto;
+      margin-right: auto;
+      transition: max-width 0.3s ease;
+    }
+    
+    .intro.two-column {
+      max-width: 1000px;
+    }
+    
+    .intro.three-column {
+      max-width: 1800px;
+    }
+    
+    .intro p {
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: #555;
+      line-height: 1.5;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    
+    /* Enhanced glassy card component */
+    .card-glass {
+      background: rgba(255, 255, 255, 0.65);
+      border-radius: 24px;
+      box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.05),
+        0 1px 3px rgba(0, 0, 0, 0.02),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: none;
+      padding: 30px;
+      margin-bottom: 25px;
+      min-height: 700px; /* Fixed minimum height for both cards */
+      width: 100%;
+      transition: all 0.3s ease;
+      animation: cardAppear 0.8s ease-out forwards;
+    }
+    
+    .card-glass:hover {
+      box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.02),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+    }
+    
+    /* Card headings with sample button */
+    .card-glass h2 {
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      margin-bottom: 25px;
+      color: #111;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: left;
+      width: 100%;
+      gap: 15px;
+    }
+    
+    .card-glass h2 .title-gradient {
+      text-align: left;
+      display: inline-block;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .title-gradient {
+      background: linear-gradient(90deg, #333, #777);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: inline-block;
+      position: relative;
+    }
+    
+    .card-glass h2:after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, #555, transparent);
+      border-radius: 2px;
+    }
+    
+    /* Custom underline colors for each section */
+    .specs-column .card-glass h2:after {
+      background: linear-gradient(90deg, #28a745, transparent);
+      height: 3px;
+    }
+    
+    .output-column .card-glass h2:after {
+      background: linear-gradient(90deg, #fd7e14, transparent);
+      height: 3px;
+    }
+    
+    .image-card.card-glass h2:after {
+      background: linear-gradient(90deg, #3a7bd5, transparent);
+      height: 3px;
+    }
+    
+    /* Dark mode underlines */
+    body.dark-mode .specs-column .card-glass h2:after {
+      background: linear-gradient(90deg, #28a745, transparent);
+    }
+    
+    body.dark-mode .output-column .card-glass h2:after {
+      background: linear-gradient(90deg, #fd7e14, transparent);
+    }
+    
+    body.dark-mode .image-card.card-glass h2:after {
+      background: linear-gradient(90deg, #3a7bd5, transparent);
+    }
+    
+    /* Form control styling */
+    .form-control, .form-select {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(200, 200, 200, 0.3);
+      border-radius: 12px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+      padding: 10px 15px;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      min-height: 38px;
+      resize: none;
+      overflow: hidden;
+    }
+    
+    /* Auto-resize textareas */
+    .form-control[rows] {
+      min-height: 38px;
+      height: auto;
+    }
+    
+    .form-control:focus {
+      height: auto;
+      min-height: 38px;
+    }
+    
+    .form-select {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23555' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 16px 12px;
+      padding-right: 2.5rem;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      border: 1px solid rgba(120, 120, 120, 0.2);
+      cursor: pointer;
+      position: relative;
+      background-color: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+    }
+    
+    .form-select:hover {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-color: rgba(100, 100, 100, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transform: translateY(-1px);
+    }
+    
+    .form-select:active {
+      transform: translateY(0px);
+    }
+    
+    /* Style the dropdown menu options */
+    select option {
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.95);
+      color: #333;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(100, 100, 100, 0.2);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* Form labels */
+    .form-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #444;
+      margin-bottom: 8px;
+    }
+    
+    /* Add indicator for dropdown fields */
+    label[for="language"]::after,
+    label[for="tone"]::after,
+    label[for="audience"]::after,
+    label[for="platform"]::after,
+    label[for="cta_style"]::after {
+      content: "";
+      display: none;
+    }
+    
+    /* Redesigned button with glass effect */
+    .btn-glass {
+      background: rgba(30, 30, 30, 0.8);
+      border: none;
+      border-radius: 20px;
+      box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.15),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 0 15px rgba(40, 167, 69, 0.3); /* Green glow from ProduSum gradient */
+      color: white;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 12px 25px;
+      letter-spacing: -0.01em;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: buttonGradientGlow 3s infinite alternate;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    
+    /* Create a subtle gradient overlay */
+    .btn-glass::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, rgba(40, 167, 69, 0.2), rgba(58, 123, 213, 0.2), rgba(253, 126, 20, 0.2));
+      border-radius: 20px;
+      opacity: 0.4;
+      transition: opacity 0.3s ease;
+      z-index: -1;
+    }
+    
+    /* Add animated border */
+    .btn-glass::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(90deg, #28a745, #3a7bd5, #fd7e14);
+      background-size: 200% 200%;
+      border-radius: 22px;
+      z-index: -2;
+      animation: borderRotate 4s linear infinite;
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+    }
+    
+    @keyframes borderRotate {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .btn-glass:hover {
+      background: rgba(40, 40, 40, 0.9);
+      box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+        0 0 20px rgba(58, 123, 213, 0.5); /* Blue glow from ProduSum gradient */
+      transform: translateY(-1px);
+      color: white;
+    }
+    
+    .btn-glass:hover::before {
+      opacity: 0.7;
+    }
+    
+    .btn-glass:hover::after {
+      opacity: 0.8;
+    }
+    
+    @keyframes buttonGradientGlow {
+      0% { box-shadow: 0 0 20px rgba(40, 167, 69, 0.6); } /* Green */
+      33% { box-shadow: 0 0 20px rgba(58, 123, 213, 0.6); } /* Blue */
+      66% { box-shadow: 0 0 20px rgba(253, 126, 20, 0.6); } /* Orange */
+      100% { box-shadow: 0 0 20px rgba(40, 167, 69, 0.6); } /* Green */
+    }
+    
+    /* Additional glowing animation for the button text */
+    @keyframes textGradientGlow {
+      0% { color: #ffffff; }
+      50% { color: #f8f9fa; }
+      100% { color: #ffffff; }
+    }
+    
+    /* Dark mode button styles */
+    body.dark-mode .btn-glass {
+      background: rgba(40, 40, 45, 0.8);
+      box-shadow: 
+        0 2px 6px rgba(0, 0, 0, 0.25),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 0 15px rgba(40, 167, 69, 0.3); /* Green glow */
+    }
+    
+    body.dark-mode .btn-glass:hover {
+      background: rgba(50, 50, 55, 0.9);
+      box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+        0 0 20px rgba(58, 123, 213, 0.5); /* Blue glow */
+    }
+    
+    /* Progress bar */
+    .progress {
+      background: rgba(230, 230, 230, 0.3);
+      border-radius: 10px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 15px;
+      display: block;
+    }
+    
+    .progress-bar {
+      background: linear-gradient(90deg, rgba(60, 60, 60, 0.8), rgba(120, 120, 120, 0.6));
+      border: none;
+      height: 6px;
+      transition: width 0.5s ease;
+    }
+    
+    /* Custom progress bar colors */
+    .output-column .progress-bar {
+      background: linear-gradient(90deg, #fd7e14, #ffaa5b) !important;
+    }
+    
+    .visualization-column-progress {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff) !important;
+    }
+    
+    /* Dark mode progress bars */
+    body.dark-mode .progress {
+      background: rgba(60, 60, 60, 0.3);
+    }
+    
+    body.dark-mode .output-column .progress-bar {
+      background: linear-gradient(90deg, #fd7e14, #ffaa5b) !important;
+    }
+    
+    body.dark-mode .visualization-column .progress-bar {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff) !important;
+    }
+    
+    /* Copy button styling */
+    .copy-btn {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      background: rgba(255, 255, 255, 0.7);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: none; /* Hidden by default */
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      opacity: 1;
+    }
+    
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+    
+    .copy-btn:active {
+      transform: translateY(0);
+    }
+    
+    .copy-btn svg {
+      width: 18px;
+      height: 18px;
+      color: #333;
+    }
+    
+    .card-glass:hover .copy-btn {
+      opacity: 1;
+    }
+    
+    .copy-success {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(40, 40, 40, 0.8);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .copy-success.show {
+      opacity: 1;
+      animation: fadeInOut 1.5s ease forwards;
+    }
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    
+    /* Status indicator styling */
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 25px;
+      color: #555;
+      font-size: 0.9rem;
+      letter-spacing: -0.01em;
+      font-weight: 400;
+      transition: opacity 0.4s ease-in-out;
+    }
+    
+    .status-indicator .spinner-border {
+      width: 1rem;
+      height: 1rem;
+      margin-right: 10px;
+      border-width: 2px;
+      opacity: 0.7;
+    }
+    
+    /* Subtle animation for pending tasks */
+    .pending-task {
+      display: flex;
+      align-items: center;
+      opacity: 0.7;
+      font-style: italic;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+    
+    .pending-task .dot-pulse {
+      position: relative;
+      margin-left: 5px;
+    }
+    
+    .pending-task .dot-pulse::before {
+      content: "...";
+      animation: pulse 1.8s infinite;
+      display: inline-block;
+      width: 15px;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
+    
+    /* Preserve final text formatting */
+    #finalText {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      color: #333;
+      font-size: 0.95rem;
+    }
+    
+    /* Redesigned tooltip icon */
+    .tooltip-icon {
+      cursor: pointer;
+      color: #777;
+      margin-left: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: rgba(200, 200, 200, 0.2);
+      font-size: 12px;
+      transition: all 0.2s ease;
+      font-weight: 400;
+    }
+    
+    .tooltip-icon:hover {
+      background-color: rgba(120, 120, 120, 0.2);
+      color: #555;
+    }
+    
+    /* Custom input for "Other" selections hidden by default */
+    .custom-input {
+      display: none;
+      margin-top: 8px;
+    }
+    
+    /* Image container styling */
+    #imageContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-basis: 40%;
+      max-width: 100%;
+    }
+    
+    /* Enhanced mobile responsiveness */
+    @media (max-width: 991.98px) {
+      .card-glass {
+        padding: 20px;
+        min-height: auto;
+        margin-bottom: 15px;
+      }
+      
+      .form-label {
+        font-size: 0.85rem;
+      }
+      
+      .row.mb-3 {
+        margin-bottom: 0.5rem !important;
+      }
+      
+      .col-md-4, .col-md-6 {
+        margin-bottom: 10px;
+      }
+      
+      .output-container {
+        flex-direction: column !important;
+      }
+      
+      .intro p {
+        font-size: 1rem;
+        padding: 0 10px;
+      }
+      
+      .btn-glass {
+        width: 100%;
+        margin-top: 10px;
+      }
+      
+      .navbar-right {
+        gap: 10px;
+        min-width: auto;
+      }
+      
+      .datetime-display {
+        font-size: 0.8rem;
+      }
+      
+      .theme-toggle {
+        width: 70px;
+        height: 35px;
+      }
+    }
+    
+    @media (min-width: 992px) {
+      .container-fluid {
+        padding-left: 40px; /* Increased padding */
+        padding-right: 40px; /* Increased padding */
+      }
+      
+      .row.equal-height-row {
+        margin-left: -20px; /* Increased negative margin */
+        margin-right: -20px; /* Increased negative margin */
+      }
+      
+      .equal-height-row > [class*='col-'] {
+        padding-left: 20px; /* Increased padding */
+        padding-right: 20px; /* Increased padding */
+      }
+      
+      /* Larger cards on larger screens */
+      .card-glass {
+        padding: 35px; /* Increased padding */
+      }
+      
+      .navbar-right {
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+      }
+    }
+    
+    /* Radio buttons and checkboxes styling */
+    .btn-outline-secondary {
+      background: rgba(255, 255, 255, 0.5);
+      border-color: rgba(200, 200, 200, 0.3);
+      color: #555;
+      font-size: 0.9rem;
+      font-weight: 400;
+      padding: 8px 16px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-check:checked + .btn-outline-secondary {
+      background: rgba(50, 50, 50, 0.85);
+      color: white;
+      border-color: transparent;
+    }
+    
+    /* Checkbox styling */
+    input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(200, 200, 200, 0.5);
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      transition: all 0.2s ease;
+      vertical-align: middle;
+      position: relative;
+    }
+    
+    input[type="checkbox"]:checked {
+      background: rgba(50, 50, 50, 0.85);
+      border-color: transparent;
+    }
+    
+    input[type="checkbox"]:checked::after {
+      content: "✓";
+      color: white;
+      font-size: 14px;
+      position: absolute;
+    }
+    
+    /* Form switch styling */
+    .form-check-input[type="checkbox"].form-switch-input {
+      height: 22px;
+      width: 45px;
+      border-radius: 20px;
+      background-color: rgba(200, 200, 200, 0.5);
+      border: 1px solid rgba(180, 180, 180, 0.5);
+      position: relative;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      display: inline-block;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .form-check-input[type="checkbox"].form-switch-input:checked {
+      background-color: rgba(50, 50, 50, 0.85);
+      border-color: transparent;
+    }
+    
+    .form-check-input[type="checkbox"].form-switch-input::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+    }
+    
+    .form-check-input[type="checkbox"].form-switch-input:checked::before {
+      transform: translateX(22px);
+    }
+    
+    .form-check-input[type="checkbox"].form-switch-input:checked::after {
+      content: none;
+    }
+    
+    /* Badge styling */
+    .badge {
+      font-weight: 400;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      letter-spacing: -0.01em;
+      background: rgba(100, 100, 100, 0.15);
+      color: #555;
+      margin-left: 5px;
+    }
+    
+    .badge-beta {
+      background: rgba(80, 80, 80, 0.7);
+      color: white;
+    }
+    
+    /* Generated image styling */
+    .generated-image-container {
+      padding: 15px;
+      border-radius: 20px;
+      box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      width: 100%;
+      max-width: 450px; /* Increased from 400px */
+      margin: 0 auto;
+      transition: all 0.3s ease;
+    }
+    
+    .generated-image {
+      border-radius: 12px;
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: all 0.3s ease;
+    }
+    
+    /* Enhanced fade animations */
+    .fade-in {
+      opacity: 0;
+      animation: fadeIn 0.7s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    }
+    
+    .fade-out {
+      opacity: 1;
+      animation: fadeOut 0.5s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    }
+    
+    /* Enhanced animations for card and content transitions */
+    .card-glass {
+      animation: cardAppear 0.8s ease-out forwards;
+    }
+    
+    @keyframes cardAppear {
+      from { 
+        opacity: 0.7; 
+        transform: translateY(15px);
+        box-shadow: 
+          0 0 0 rgba(0, 0, 0, 0),
+          0 0 0 rgba(0, 0, 0, 0),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0);
+        box-shadow: 
+          0 4px 30px rgba(0, 0, 0, 0.05),
+          0 1px 3px rgba(0, 0, 0, 0.02),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+      }
+    }
+    
+    /* Slide-in animation for columns */
+    @keyframes slideInFromRight {
+      from {
+        transform: translateX(80px) scale(0.95);
+        opacity: 0;
+        filter: blur(8px);
+      }
+      50% {
+        filter: blur(4px);
+      }
+      to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+        filter: blur(0);
+      }
+    }
+    
+    .slide-in {
+      animation: slideInFromRight 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      perspective: 1000px;
+    }
+    
+    /* Animation for content inside the cards */
+    @keyframes fadeUpIn {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+        filter: blur(5px);
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+        filter: blur(0);
+      }
+    }
+    
+    /* Apply to content inside columns when they appear */
+    .slide-in .card-glass h2,
+    .slide-in .card-glass .form-control,
+    .slide-in .card-glass .status-indicator,
+    .slide-in #finalText,
+    .slide-in #imageContainer {
+      animation: fadeUpIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: 0.1s;
+    }
+    
+    .form-control, .form-select, .btn-glass, .theme-toggle, .sample-btn {
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    
+    /* Staggered animations for form elements */
+    .row > div {
+      opacity: 0;
+      animation: elementFadeIn 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+    
+    @keyframes elementFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Apply staggered animation to columns */
+    .row > div:nth-child(1) { animation-delay: 0.1s; }
+    .row > div:nth-child(2) { animation-delay: 0.2s; }
+    .row > div:nth-child(3) { animation-delay: 0.3s; }
+    
+    /* Generate button animation */
+    .btn-glass {
+      animation: buttonPulse 2s infinite alternate;
+    }
+    
+    @keyframes buttonPulse {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.03); }
+    }
+    
+    .btn-glass:hover {
+      animation-play-state: paused;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-5px); }
+    }
+    
+    /* Dark mode toggle styling */
+    .theme-toggle {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 5px;
+      margin: 0;
+      flex-shrink: 0; /* Prevent the toggle from shrinking */
+    }
+    
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .theme-toggle-track {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .theme-toggle-thumb {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: #fff;
+      border-radius: 50%;
+      left: 5px;
+      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+      z-index: 1;
+    }
+    
+    body.dark-mode .theme-toggle-thumb {
+      transform: translateX(40px);
+    }
+    
+    .theme-toggle svg {
+      width: 18px;
+      height: 18px;
+      color: #333;
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+    
+    .theme-toggle #lightIcon {
+      margin-left: 7px;
+    }
+    
+    .theme-toggle #darkIcon {
+      margin-right: 7px;
+      color: #777;
+    }
+    
+    body.dark-mode .theme-toggle {
+      background: rgba(40, 40, 45, 0.7);
+    }
+    
+    body.dark-mode .theme-toggle-thumb {
+      background: #333;
+    }
+    
+    body.dark-mode .theme-toggle #lightIcon {
+      color: #777;
+    }
+    
+    body.dark-mode .theme-toggle #darkIcon {
+      color: #fff;
+    }
+    
+    body.dark-mode .navbar {
+      background: rgba(30, 30, 35, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(50, 50, 60, 0.5);
+    }
+    
+    body.dark-mode .navbar-brand span:first-child {
+      background: linear-gradient(90deg, #ccc, #fff);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    
+    body.dark-mode .intro p {
+      color: #bbb;
+    }
+    
+    body.dark-mode .card-glass {
+      background: rgba(40, 40, 45, 0.65);
+      box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.2),
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    body.dark-mode .card-glass:hover {
+      box-shadow: 
+        0 10px 40px rgba(0, 0, 0, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    }
+    
+    body.dark-mode .title-gradient {
+      background: linear-gradient(90deg, #ccc, #fff);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    
+    body.dark-mode .card-glass h2:after {
+      background: linear-gradient(90deg, #aaa, transparent);
+    }
+    
+    body.dark-mode .form-control, 
+    body.dark-mode .form-select {
+      background: rgba(50, 50, 55, 0.8);
+      border-color: rgba(70, 70, 80, 0.3);
+      color: #ddd;
+    }
+    
+    body.dark-mode .form-control:focus, 
+    body.dark-mode .form-select:focus {
+      background: rgba(55, 55, 60, 0.95);
+      border-color: rgba(80, 80, 90, 0.4);
+      box-shadow: 0 0 0 3px rgba(100, 100, 120, 0.2);
+    }
+    
+    body.dark-mode .form-control::placeholder {
+      color: #999;
+    }
+    
+    body.dark-mode .form-label {
+      color: #ccc;
+    }
+    
+    body.dark-mode .tooltip-icon {
+      background-color: rgba(80, 80, 100, 0.3);
+      color: #bbb;
+    }
+    
+    body.dark-mode .tooltip-icon:hover {
+      background-color: rgba(100, 100, 130, 0.4);
+    }
+    
+    body.dark-mode .btn-outline-secondary {
+      background: rgba(60, 60, 70, 0.5);
+      border-color: rgba(80, 80, 90, 0.3);
+      color: #ccc;
+    }
+    
+    body.dark-mode .btn-check:checked + .btn-outline-secondary {
+      background: rgba(100, 100, 130, 0.75);
+    }
+    
+    body.dark-mode .copy-btn {
+      background: rgba(60, 60, 70, 0.7);
+    }
+    
+    body.dark-mode .copy-btn:hover {
+      background: rgba(70, 70, 80, 0.9);
+    }
+    
+    body.dark-mode .copy-btn svg {
+      color: #ccc;
+    }
+    
+    body.dark-mode #finalText {
+      color: #ddd;
+    }
+    
+    /* Improve dark mode text readability */
+    body.dark-mode .form-label {
+      color: #e0e0e0;
+    }
+    
+    body.dark-mode .text-start {
+      color: #e8e8e8;
+    }
+    
+    body.dark-mode .status-indicator {
+      color: #c8c8c8;
+    }
+    
+    body.dark-mode .intro p {
+      color: #d5d5d5;
+    }
+    
+    body.dark-mode .tooltip-icon {
+      background-color: rgba(100, 100, 120, 0.4);
+      color: #e0e0e0;
+    }
+    
+    /* Connection status indicator */
+    .connection-status-container {
+      display: flex;
+      align-items: center;
+      margin-right: 0;
+    }
+    
+    .connection-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      transition: all 0.3s ease;
+      position: relative;
+      cursor: default;
+    }
+    
+    .connection-status svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .connection-status.offline {
+      color: #dc3545; /* Red */
+      opacity: 0.8;
+    }
+    
+    .connection-status.online {
+      color: #28a745; /* Green */
+      opacity: 0.8;
+    }
+    
+    .connection-status.connecting {
+      color: #ffc107; /* Yellow/Amber */
+      opacity: 0.8;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.3; }
+      50% { opacity: 0.6; }
+      100% { opacity: 0.3; }
+    }
+    
+    body.dark-mode .connection-status.offline {
+      color: #dc3545; /* Red */
+      opacity: 0.7;
+    }
+    
+    body.dark-mode .connection-status.online {
+      color: #28a745; /* Green */
+      opacity: 0.7;
+    }
+    
+    body.dark-mode .connection-status.connecting {
+      color: #ffc107; /* Yellow/Amber */
+      opacity: 0.7;
+    }
+    
+    /* Sample button styling */
+    .sample-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.7);
+      border: none;
+      border-radius: 15px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin: 0;
+      flex-shrink: 0;
+    }
+    
+    .sample-btn svg {
+      width: 16px;
+      height: 16px;
+      margin-right: 6px;
+      color: #333;
+    }
+    
+    /* Responsive adjustments for the heading and sample button */
+    @media (max-width: 576px) {
+      .card-glass h2 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    
+      .sample-btn {
+        margin-left: 0;
+      }
+    }
+    
+    .sample-btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+    
+    body.dark-mode .sample-btn {
+      background: rgba(60, 60, 70, 0.7);
+      color: #ddd;
+    }
+    
+    body.dark-mode .sample-btn svg {
+      color: #ccc;
+    }
+    
+    body.dark-mode .sample-btn:hover {
+      background: rgba(70, 70, 80, 0.9);
+    }
+    
+    /* Feedback mechanism styling */
+    .feedback-container {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(200, 200, 200, 0.3);
+      text-align: center;
+      display: none;
+    }
+    
+    .feedback-container p {
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+    
+    .rating-stars {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+    
+    .star {
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #ccc;
+      transition: color 0.2s ease;
+    }
+    
+    .star:hover, .star.active {
+      color: #ffb400;
+    }
+    
+    body.dark-mode .feedback-container {
+      border-top-color: rgba(80, 80, 90, 0.3);
+    }
+    
+    body.dark-mode .star {
+      color: #555;
+    }
+    
+    body.dark-mode .star:hover, 
+    body.dark-mode .star.active {
+      color: #ffb400;
+    }
+    
+    /* Tab navigation styling */
+    .tab-nav {
+      display: none;
+    }
+    
+    .tab-content {
+      display: block;
+    }
+    
+    /* Progress indicator for steps */
+    .progress-indicator {
+      display: none;
+    }
+    
+    /* Row for equal height cards */
+    .equal-height-row {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    
+    .equal-height-row > [class*='col-'] {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .equal-height-row .card-glass {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Layout adjustments for two or three columns */
+    .two-column-layout {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .three-column-layout {
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    
+    /* macOS-style date/time display */
+    .datetime-display {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 0.9rem;
+      color: #666;
+      margin-left: 5px;
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.3s ease;
+    }
+
+    body.dark-mode .datetime-display {
+      color: #999;
+    }
+    
+    /* For both title-gradient spans and heading elements */
+    .card-glass h2 {
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    /* Image card specific styles */
+    .image-card .title-gradient {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 600;
+    }
+    
+    /* Product Specifications card styles */
+    .specs-column .title-gradient {
+      background: linear-gradient(90deg, #28a745, #5fd080);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 600;
+    }
+    
+    /* Marketing Copy card styles */
+    .output-column .title-gradient {
+      background: linear-gradient(90deg, #fd7e14, #ffaa5b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 600;
+    }
+    
+    /* Produsum AI title multi-color gradient */
+    .navbar-brand {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+    }
+    
+    .navbar-brand .produsum-gradient {
+      background: linear-gradient(90deg, #28a745, #3a7bd5, #fd7e14);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 700;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    #regenerateBtn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    body.dark-mode .title-gradient {
+      background: linear-gradient(90deg, #ccc, #fff);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    
+    /* Dark mode gradients for each section */
+    body.dark-mode .image-card .title-gradient {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    
+    body.dark-mode .specs-column .title-gradient {
+      background: linear-gradient(90deg, #28a745, #5fd080);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    
+    body.dark-mode .output-column .title-gradient {
+      background: linear-gradient(90deg, #fd7e14, #ffaa5b);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    
+    body.dark-mode .navbar-brand .produsum-gradient {
+      background: linear-gradient(90deg, #28a745, #3a7bd5, #fd7e14);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    
+    body.dark-mode .card-glass h2:after {
+      background: linear-gradient(90deg, #aaa, transparent);
+    }
+    
+    /* Fix for image progress bar */
+    #image-progress-bar {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff) !important;
+      display: block;
+      transition: width 0.3s ease;
+    }
+    
+    #image-progress-container {
+      display: block !important;
+    }
+    
+    #image-progress-bar {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff) !important;
+      height: 6px !important;
+      transition: width 0.3s ease;
+    }
+    
+    /* Override conflicting CSS */
+    #image-progress-container {
+      display: none !important; /* Hidden by default until generation starts */
+    }
+    
+    #image-progress-bar {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff) !important;
+      height: 6px !important;
+      transition: width 0.3s ease;
+    }
+    
+    /* Ensure proper blue gradient for the progress bar */
+    .visualization-column-progress {
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff) !important;
+    }
+    
+    /* Reset button styles - updated for better visibility */
+    .reset-button {
+      background: rgba(240, 240, 240, 0.9);
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      font-weight: 500;
+      margin-right: 20px;
+      position: relative;
+      z-index: 1000;
+    }
+
+    .reset-button:hover {
+      background: rgba(250, 250, 250, 1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Dark mode styles for reset button */
+    body.dark-mode .reset-button {
+      background: rgba(70, 70, 70, 0.7);
+      color: #fff;
+    }
+
+    body.dark-mode .reset-button:hover {
+      background: rgba(90, 90, 90, 0.9);
+    }
+    
+    /* Navbar left container styling */
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      min-width: 120px;
+    }
+
+    body.dark-mode .reset-button {
+      background: rgba(100, 100, 100, 0.8);
+      color: #fff;
+    }
+
+    body.dark-mode .reset-button:hover {
+      background: rgba(120, 120, 120, 0.9);
+    }
+    
+    
+  </style>
+</head>
+<body>
+  <!-- Background pattern -->
+  <div class="bg-pattern"></div>
+  
+  <!-- Navigation Bar with brand centered -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container">
+      <!-- Add reset button to the left side -->
+      <div class="navbar-left">
+        <button class="reset-button" onclick="restartApp()">
+          <i class="fas fa-redo"></i> Restart
+        </button>
+      </div>
+      <a class="navbar-brand" href="#">
+        <span class="produsum-gradient">ProduSum</span>
+        <span style="font-size: 0.7rem; font-weight: 400; margin-left: 2px; opacity: 0.7;">AI</span>
+      </a>
+      <div class="navbar-right">
+        <div class="connection-status-container">
+          <div id="connectionStatus" class="connection-status connecting" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Initializing connection...">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="datetime-display" id="datetimeDisplay"></div>
+        <div class="theme-toggle" id="themeToggle" onclick="toggleDarkMode()">
+          <div class="theme-toggle-track">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun" viewBox="0 0 16 16" id="lightIcon"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon" viewBox="0 0 16 16" id="darkIcon"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/></svg>
+          </div>
+          <div class="theme-toggle-thumb"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Introduction Section -->
+  <div class="container-fluid text-center my-3 intro">
+    <p class="lead text-muted">Transform your product marketing instantly with AI-powered descriptions. Our tool combines GPT-4o's language expertise with DALL-E 3's visualization to create engaging content that sells.</p>
+  </div>
+
+  <!-- Main Content Container -->
+  <div class="container-fluid main-container" style="max-width: 1800px; padding-left: 30px; padding-right: 30px;">
+    <div class="row equal-height-row g-4 justify-content-center">
+      <!-- Product Specifications -->
+      <div class="col-md-6 col-lg-6 col-xl-4 specs-column">
+        <div class="card-glass">
+          <h2>
+            <span class="title-gradient">Product Specifications</span>
+            <button class="sample-btn" id="sampleBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Sample
+            </button>
+          </h2>
+          <div id="error-container"></div>
+          
+          <!-- Form inputs remain the same -->
+          <!-- Row 1: Product Name -->
+          <div class="mb-3">
+            <label for="product_name" class="form-label fw-bold">
+              Product Name (required)
+              <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="The name of your product or service that will be featured in the description.">i</span>
+            </label>
+            <input type="text" class="form-control" id="product_name" required>
+          </div>
+          <!-- Row 2: Product Details -->
+          <div class="mb-3">
+            <label for="product_details" class="form-label fw-bold">
+              Product Details
+              <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Key features, specifications, materials, or other important details about your product.">i</span>
+            </label>
+            <textarea class="form-control" id="product_details" rows="2"></textarea>
+          </div>
+          <!-- Row 3: Language, Tone/Style, Call to Action Style -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="language" class="form-label fw-bold">
+                Language
+                <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="The language in which your product description will be generated.">i</span>
+              </label>
+              <select class="form-select" id="language" onchange="checkOther(this, 'language_other')">
+                <option value="English" selected>English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Other">Other</option>
+              </select>
+              <input type="text" class="form-control custom-input" id="language_other" placeholder="Specify language">
+            </div>
+            <div class="col-md-6">
+              <label for="tone" class="form-label fw-bold">
+                Tone / Style
+                <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="The overall tone and style of the description (e.g., professional, friendly, luxurious).">i</span>
+              </label>
+              <select class="form-select" id="tone" onchange="checkOther(this, 'tone_other')">
+                <option value="Professional" selected>Professional</option>
+                <option value="Friendly">Friendly</option>
+                <option value="Luxury">Luxury</option>
+                <option value="Fun">Fun</option>
+                <option value="Minimalist">Minimalist</option>
+                <option value="Bold">Bold</option>
+                <option value="Other">Other</option>
+              </select>
+              <input type="text" class="form-control custom-input" id="tone_other" placeholder="Specify tone">
+            </div>
+          </div>
+          <!-- Row 4: Target Audience, Call to Action Style, Viral Appeal -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="audience" class="form-label fw-bold">
+                Target Audience
+                <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="The specific demographic or customer segment you want to attract with this description.">i</span>
+              </label>
+              <select class="form-select" id="audience" onchange="checkOther(this, 'audience_other')">
+                <option value="General Consumers" selected>General Consumers</option>
+                <option value="Professionals">Professionals</option>
+                <option value="Tech Enthusiasts">Tech Enthusiasts</option>
+                <option value="Families">Families</option>
+                <option value="Young Adults">Young Adults</option>
+                <option value="Seniors">Seniors</option>
+                <option value="Luxury Buyers">Luxury Buyers</option>
+                <option value="Budget Shoppers">Budget Shoppers</option>
+                <option value="Other">Other</option>
+              </select>
+              <input type="text" class="form-control custom-input" id="audience_other" placeholder="Specify audience">
+            </div>
+            <div class="col-md-6">
+              <label for="platform" class="form-label fw-bold">
+                Platform / Medium
+                <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Where this description will be published (e.g., website, social media, email campaign).">i</span>
+              </label>
+              <select class="form-select" id="platform" onchange="checkOther(this, 'platform_other')">
+                <option value="Website" selected>Website</option>
+                <option value="Social Media">Social Media</option>
+                <option value="Email">Email</option>
+                <option value="Mobile App">Mobile App</option>
+                <option value="Other">Other</option>
+              </select>
+              <input type="text" class="form-control custom-input" id="platform_other" placeholder="Specify platform">
+            </div>
+          </div>
+          <!-- Row 5: SEO Keywords and Selling Points -->
+          <div class="mb-3">
+            <label for="keywords" class="form-label fw-bold">
+              SEO Keywords
+              <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Important search terms that should be included in the description to improve search engine optimization.">i</span>
+            </label>
+            <textarea class="form-control" id="keywords" rows="1"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="usps" class="form-label fw-bold">Selling Points
+              <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Unique features or benefits that set your product apart from competitors.">i</span>
+            </label>
+            <textarea class="form-control" id="usps" rows="1"></textarea>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="cta_style" class="form-label fw-bold">
+                Call to Action Style
+                <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="The type of call to action to include (e.g., urgent, subtle, direct, question based).">i</span>
+              </label>
+              <select class="form-select" id="cta_style" onchange="checkOther(this, 'cta_style_other')">
+                <option value="Direct" selected>Direct</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Subtle">Subtle</option>
+                <option value="Question based">Question based</option>
+                <option value="Limited time">Limited time</option>
+                <option value="Discount focused">Discount focused</option>
+                <option value="Value focused">Value focused</option>
+                <option value="Other">Other</option>
+              </select>
+              <input type="text" class="form-control custom-input" id="cta_style_other" placeholder="Specify Call to Action style">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold">
+                Viral Appeal 🔥✨
+                <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Add emotional triggers, social proof, and FOMO elements to increase shareability and engagement. Includes emojis and attention-grabbing phrases.">i</span>
+              </label>
+              <div class="btn-group d-flex" role="group" aria-label="Viral Tone">
+                <input type="radio" class="btn-check" name="viral" id="viral_yes" value="Yes" autocomplete="off">
+                <label class="btn btn-outline-secondary" for="viral_yes">Yes 🚀</label>
+                <input type="radio" class="btn-check" name="viral" id="viral_no" value="No" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary" for="viral_no">No</label>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Row 6: Additional Instructions -->
+          <div class="mb-3">
+            <label for="extra_instructions" class="form-label fw-bold">
+              Additional Instructions
+              <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Any special requirements, constraints, or specific points you want to include in the description.">i</span>
+            </label>
+            <textarea class="form-control" id="extra_instructions" rows="2"></textarea>
+          </div>
+          <!-- Row 7: Toggle for Image Generation Beta -->
+          <div class="mb-3">
+            <div class="d-flex align-items-center">
+              <label class="form-label fw-bold mb-0 me-3">
+                Product Image Generation <span class="badge badge-beta">Beta</span>
+                <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="right" title="Creates a realistic product visualization using DALL-E 3 AI image generation technology. Better image quality coming soon with GPT-4o image generation.">i</span>
+              </label>
+              <div class="form-check form-switch">
+                <input type="checkbox" id="image_toggle" class="form-check-input form-switch-input">
+              </div>
+            </div>
+          </div>
+          <!-- Generate Button -->
+          <div class="d-grid">
+            <button type="button" class="btn btn-glass btn-lg" id="generateBtn">
+              <span>Generate</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right ms-2" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Output Section - Initially Hidden -->
+      <div class="col-md-6 col-lg-6 col-xl-4 output-column" style="display: none;">
+        <div class="card-glass">
+          <h2 class="mb-4 text-center position-relative">
+            <span class="title-gradient">Marketing Copy</span>
+            <!-- Copy button positioned absolutely in the right corner -->
+            <button class="copy-btn" id="copyBtn" title="Copy to clipboard" style="position: absolute; top: 0; right: 0;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+              </svg>
+              <span class="copy-success">Copied!</span>
+            </button>
+          </h2>
+          
+          <!-- Status indicators (initially visible) -->
+          <div id="status-indicators">
+            <div class="progress d-none" id="text-progress-container">
+              <div class="progress-bar" role="progressbar" style="width: 0%" id="text-progress-bar"></div>
+            </div>
+            <div class="status-indicator" id="text-status-indicator">
+              <div class="spinner-border text-secondary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span id="text-status">Waiting to start generation...</span>
+            </div>
+          </div>
+          
+          <!-- Output container (initially hidden) -->
+          <div id="finalOutput" class="d-none">
+            <!-- Text container -->
+            <div id="finalText" class="text-start"></div>
+            
+            <!-- Feedback mechanism -->
+            <div class="feedback-container" id="feedbackContainer">
+              <p>How would you rate this marketing copy?</p>
+              <div class="rating-stars">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+              </div>
+              <p class="feedback-thanks d-none">Thanks for your feedback!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Image Visualization Section (Initially Hidden) -->
+      <div class="col-md-12 col-lg-12 col-xl-4 visualization-column" id="visualizationColumn" style="display: none;">
+        <div class="card-glass image-card">
+          <h2>
+            <span class="title-gradient">Product Visualization</span>
+          </h2>
+          
+          <!-- Direct inline-styled progress bar that will always be visible -->
+          <div id="image-progress-container" style="display: block !important; background: rgba(230, 230, 230, 0.3); border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 15px; width: 100%;">
+            <div id="image-progress-bar" style="background: linear-gradient(90deg, #3a7bd5, #00d2ff); width: 0%; height: 100%; transition: width 0.3s ease;"></div>
+          </div>
+          
+          <!-- Image status indicator -->
+          <div id="image-status-indicator" class="status-indicator" style="display: flex;">
+            <div class="spinner-border text-primary" role="status" style="width: 1rem; height: 1rem; margin-right: 10px; border-width: 2px; opacity: 0.7;">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <span id="image-status">Waiting to start image generation...</span>
+          </div>
+          
+          <div id="imageContainer"></div>
+          
+          <!-- Download button (only visible when image is generated) -->
+          <div class="text-center mt-3" id="downloadBtnContainer" style="display: none;">
+            <button type="button" class="btn btn-glass" id="downloadBtn">
+              <span>Download</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download ms-2" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Enable debugging
+    console.log("Script loading - initial script execution");
+    
+    // Global variables
+    let imageGenerationEnabled = false;
+    let socket;
+    let progressInterval = null; // Fix: Added global progressInterval variable to track animation timer
+    let animationInProgress = false; // Add a flag to track if animation sequence is in progress
+    let marketingCopyShown = false; // Flag to track if Marketing Copy has been shown
+    let productVisualizationShown = false; // Flag to track if Product Visualization has been shown
+    let animationStartTime = 0; // Track when animation sequence started
+    
+    // Verify Socket.IO is loaded correctly
+    function verifySocketIO() {
+      if (typeof io === 'undefined') {
+        console.error("Socket.IO is not loaded properly!");
+        document.getElementById('error-container').innerHTML = 
+          '<div class="alert alert-danger">Error: Socket.IO library could not be loaded. Please check your internet connection and try again.</div>';
+        return false;
+      }
+      console.log("Socket.IO library verified ✓");
+      return true;
+    }
+    
+    // Initialize Socket.IO with explicit URL and improved configuration
+    function initSocketIO() {
+      console.log("Initializing Socket.IO connection...");
+      
+      try {
+        // Get the full URL for Socket.IO server
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        const port = window.location.port || (protocol === 'https:' ? '443' : '80');
+        
+        console.log(`Connecting to Socket.IO at ${protocol}//${hostname}:${port}`);
+        
+        // Create socket with basic but compatible options
+        socket = io({
+          path: '/socket.io/',
+          transports: ['polling', 'websocket'],  // Try both for better compatibility
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          reconnectionAttempts: Infinity,
+          timeout: 20000,
+          autoConnect: true
+        });
+
+        // Add connection event handlers with detailed logging
+        socket.on('connect', function() {
+          console.log("Socket.IO connected successfully with ID:", socket.id);
+          // Hide any previous connection errors
+          document.getElementById('error-container').innerHTML = '';
+          
+          // Update connection status indicator
+          updateConnectionStatus('online');
+          
+          // Ensure text status remains "Waiting to start generation..."
+          document.getElementById('text-status').innerText = "Waiting to start generation...";
+          document.getElementById('image-status').innerText = "Waiting to start image generation...";
+        });
+
+        socket.on('connect_error', function(error) {
+          console.error("Socket connection error:", error);
+          // Update connection status indicator
+          updateConnectionStatus('offline');
+          
+          // Show error message to user with reconnect button
+          document.getElementById('error-container').innerHTML = 
+            '<div class="alert alert-danger">Connection error: Unable to connect to the server. <button class="btn btn-sm btn-primary ms-2" onclick="reconnectSocket()">Reconnect</button></div>';
+            
+          // Update tooltip with specific error message
+          updateConnectionTooltip('connectionStatus', 'Connection error: Unable to connect to the server');
+        });
+        
+        // Add explicit disconnect handler
+        socket.on('disconnect', function(reason) {
+          console.error("Socket disconnected:", reason);
+          updateConnectionStatus('offline');
+          
+          document.getElementById('error-container').innerHTML = 
+            '<div class="alert alert-warning">Connection lost. Attempting to reconnect... <button class="btn btn-sm btn-primary ms-2" onclick="reconnectSocket()">Reconnect manually</button></div>';
+        });
+        
+        // Progress event handler for text generation
+        socket.on('progress', function(event) {
+          console.log("Progress event received:", event);
+          
+          // Handle progress update for text generation
+          const textStatus = document.getElementById("text-status");
+          
+          // Use event.data as status text if provided, but filter out the unwanted messages
+          if (event.data && event.data !== "Connected to server." && 
+              event.data !== "Text generation complete, image generation in progress." &&
+              event.data !== "Text generation complete.") {
+            textStatus.innerText = event.data || '';
+          }
+          
+          // Check if there's an error message and display it
+          if (event.data && event.data.startsWith('Error:') && !event.data.includes('connection')) {
+            document.getElementById('error-container').innerHTML = 
+              '<div class="alert alert-danger">' + event.data + '</div>';
+            // Hide the spinners in case of error
+            document.getElementById('text-status-indicator').querySelector('.spinner-border').style.display = 'none';
+            document.getElementById('image-status-indicator').querySelector('.spinner-border').style.display = 'none';
+            // Hide progress bar
+            document.getElementById('text-progress-container').classList.add('d-none');
+          }
+          
+          // Update progress bar
+          if (event.percent !== undefined) {
+            const progressContainer = document.getElementById('text-progress-container');
+            const progressBar = document.getElementById('text-progress-bar');
+            
+            if (progressContainer.classList.contains('d-none')) {
+              progressContainer.classList.remove('d-none');
+            }
+            
+            // Always ensure progress container is visible during updates
+            progressContainer.style.display = 'block';
+            
+            progressBar.style.width = event.percent + '%';
+            progressBar.setAttribute('aria-valuenow', event.percent);
+          }
+          
+          // Check if text generation is complete
+          if (event.data === 'Text generation complete.') {
+            // Update status but hide the text message
+            textStatus.innerText = "";
+            document.getElementById('text-status-indicator').querySelector('.spinner-border').style.display = 'none';
+            // Show progress bar as complete
+            document.getElementById('text-progress-bar').style.width = '100%';
+            // Display text immediately
+            displayFinalOutput(event.partial || "", "");
+            // Show feedback container
+            setTimeout(function() {
+              document.getElementById('feedbackContainer').style.display = 'block';
+            }, 1000);
+          }
+          
+          // Check if image generation is starting - but DON'T show the visualization column directly,
+          // let our animation timeouts handle it
+          if (event.image_generation_started) {
+            // Only update status, don't show column
+            const imageStatus = document.getElementById("image-status");
+            imageStatus.innerText = "Image is generating...";
+          }
+          
+          // When everything is finished, update if there's an image URL
+          if (event.data === 'Product description generated.' && event.image_url) {
+            // Only update the image content, don't show the column
+            addImageToOutput(event.image_url);
+          }
+        });
+        
+        // Handle image generation progress events
+        socket.on('image_progress', function(event) {
+          console.log("Image progress event received:", event);
+          
+          // DON'T show the visualization column here - let the animation timeouts handle it
+          // Only update content within the column
+          
+          // Get references to elements
+          const imageStatusIndicator = document.getElementById('image-status-indicator');
+          const imageStatus = document.getElementById('image-status');
+          const progressBar = document.getElementById('image-progress-bar');
+          const progressContainer = document.getElementById('image-progress-container');
+          
+          // If this is a progress update with a percent value
+          if (event.percent !== undefined) {
+            // Update progress bar with the percentage
+            progressBar.style.width = event.percent + '%';
+          }
+          
+          // If this is a status update (text message)
+          if (event.status) {
+            // Update status text
+            imageStatus.innerText = event.status;
+          }
+          
+          // If image URL is received - generation complete
+          if (event.image_url) {
+            // Set progress to 100%
+            progressBar.style.width = '100%';
+            
+            // Create the image element
+            const img = document.createElement('img');
+            img.src = event.image_url;
+            img.className = 'img-fluid rounded shadow-sm mt-3 generated-image';
+            img.alt = 'Generated product visualization';
+            img.style.width = '100%';
+            
+            // Add image to container - only if animation has finished or at least 2.5 seconds passed
+            // to ensure our animation sequence is respected
+            const imageContainer = document.getElementById('imageContainer');
+            
+            const handleImageAddition = function() {
+              // Only add the image if the column is visible
+              if (!animationInProgress || Date.now() - animationStartTime > 2500) {
+                imageContainer.innerHTML = '';
+                imageContainer.style.display = 'block';
+                imageContainer.appendChild(img);
+                
+                // Show download button
+                document.getElementById('downloadBtnContainer').style.display = 'block';
+                
+                // Hide status indicator completely
+                imageStatusIndicator.style.display = 'none';
+                
+                // Hide progress bar container when image generation is complete
+                progressContainer.style.display = 'none';
+              } else {
+                // Wait a bit more if we're still in the animation sequence
+                setTimeout(handleImageAddition, 250);
+              }
+            };
+            
+            handleImageAddition();
+            
+            // Stop any progress animation that might be running
+            if (progressInterval) {
+              clearInterval(progressInterval);
+              progressInterval = null;
+            }
+          }
+        });
+        
+        return true;
+      } catch (error) {
+        console.error("Error initializing Socket.IO:", error);
+        document.getElementById('error-container').innerHTML = 
+          '<div class="alert alert-danger">Error initializing connection. Please reload the page and try again.</div>';
+        return false;
+      }
+    }
+    
+    // Make sure Socket.IO is initialized as soon as the page is ready
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      console.log("Document already ready, initializing Socket.IO");
+      if (verifySocketIO()) {
+        initSocketIO();
+      }
+    } else {
+      document.addEventListener("DOMContentLoaded", function() {
+        console.log("Document just became ready, initializing Socket.IO");
+        if (verifySocketIO()) {
+          initSocketIO();
+        }
+      });
+    }
+    
+    // Initialize the page when DOM is fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+      console.log("DOM fully loaded");
+      
+      // Set initial connection status to connecting
+      updateConnectionStatus('connecting');
+      
+      // Add a small delay to ensure all scripts are fully loaded
+      setTimeout(function() {
+        // Verify Socket.IO library is available
+        if (verifySocketIO()) {
+          // Initialize Socket.IO
+          initSocketIO();
+        }
+        
+        // Initialize Bootstrap tooltips
+        try {
+          var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+          });
+          console.log("Tooltips initialized");
+        } catch (e) {
+          console.warn("Could not initialize tooltips:", e);
+        }
+  
+        // Initialize form element event handlers
+        initializeFormHandlers();
+        
+        // Update initial layout
+        updateLayoutClass();
+        
+        // Update datetime display initially
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+        
+        // Log initialization complete
+        console.log("Page initialization complete");
+      }, 200); // Small delay to ensure everything is loaded
+    });
+    
+    // Initialize all form element handlers
+    function initializeFormHandlers() {
+      console.log("Initializing form handlers");
+      
+      // Auto-resize for all textareas
+      document.querySelectorAll('textarea.form-control').forEach(textarea => {
+        textarea.addEventListener('input', function() {
+          this.style.height = 'auto';
+          this.style.height = (this.scrollHeight) + 'px';
+        });
+      });
+      
+      // Copy button functionality
+      const copyBtn = document.getElementById('copyBtn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          const textToCopy = document.getElementById('finalText').innerText;
+          navigator.clipboard.writeText(textToCopy).then(function() {
+            // Show success message using the existing copy-success element
+            const successMessage = document.querySelector('.copy-success');
+            if (successMessage) {
+              successMessage.classList.add('show');
+              setTimeout(function() {
+                successMessage.classList.remove('show');
+              }, 1500);
+            }
+          }).catch(function(err) {
+            console.error('Could not copy text: ', err);
+          });
+        });
+      }
+      
+      // Generate button event binding
+      const generateBtn = document.getElementById('generateBtn');
+      if (generateBtn) {
+        generateBtn.addEventListener('click', startGeneration);
+      } else {
+        console.error("Generate button not found");
+      }
+      
+      // Image toggle checkbox
+      const imageToggle = document.getElementById("image_toggle");
+      if (imageToggle) {
+        imageToggle.addEventListener("change", function() {
+          console.log("Image toggle changed:", this.checked);
+          
+          // Store the toggle state only - don't show any columns
+          imageGenerationEnabled = this.checked;
+          
+          // Only update status indicator visibility
+          if (this.checked) {
+            // Just prepare the status indicator, don't show it yet
+            document.getElementById('image-status-indicator').style.display = 'none';
+            document.getElementById('image-progress-container').style.display = 'none';
+          } else {
+            document.getElementById('image-status-indicator').style.display = 'none';
+          }
+          
+          // Make sure both columns are hidden - they'll appear in sequence after Generate is clicked
+          document.getElementById('visualizationColumn').style.display = 'none';
+          document.querySelector('.output-column').style.display = 'none';
+          updateLayoutClass();
+        });
+      } else {
+        console.error("Image toggle not found");
+      }
+      
+      // Initialize dark mode toggle
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        console.log("Theme toggle in initializeFormHandlers: ", themeToggle);
+        if (savedTheme === 'dark') {
+          document.body.classList.add('dark-mode');
+        }
+        
+        themeToggle.addEventListener('click', function() {
+          console.log("Theme toggle clicked in initializeFormHandlers");
+          document.body.classList.toggle('dark-mode');
+          const isDarkMode = document.body.classList.contains('dark-mode');
+          
+          // Save theme preference
+          localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        });
+      }
+      
+      // Download button for visualization
+      const downloadBtn = document.getElementById('downloadBtn');
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+          // Find the image
+          const img = document.querySelector('.generated-image');
+          if (img) {
+            // Create a temporary link
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = 'product-visualization.png';
+            link.click();
+          } else {
+            alert('No image available to download');
+          }
+        });
+      }
+      
+      // Feedback stars functionality
+      const stars = document.querySelectorAll('.star');
+      stars.forEach(star => {
+        star.addEventListener('click', function() {
+          const value = this.getAttribute('data-value');
+          
+          // Reset all stars
+          stars.forEach(s => s.classList.remove('active'));
+          
+          // Activate clicked star and all below it
+          stars.forEach(s => {
+            if (s.getAttribute('data-value') <= value) {
+              s.classList.add('active');
+            }
+          });
+          
+          // Show thank you message
+          document.querySelector('.feedback-thanks').classList.remove('d-none');
+          
+          // Save the feedback rating with product name and timestamp to local storage
+          const productName = document.getElementById('product_name').value;
+          const timestamp = new Date().toISOString();
+          
+          // Get existing ratings or create new array
+          const existingRatings = JSON.parse(localStorage.getItem('product_ratings') || '[]');
+          
+          // Add new rating
+          existingRatings.push({
+            product: productName,
+            rating: value,
+            timestamp: timestamp
+          });
+          
+          // Save back to local storage
+          localStorage.setItem('product_ratings', JSON.stringify(existingRatings));
+          
+          // Log the rating (for debugging)
+          console.log('User rated: ' + value + ' stars');
+          console.log('Saved ratings:', existingRatings);
+        });
+      });
+    }
+
+    // Function to start the generation process
+    function startGeneration() {
+      console.log("startGeneration function called");
+      
+      // Clear any existing progress indicators and results
+      clearProgress();
+      
+      // Reset animation flags
+      animationInProgress = true;
+      marketingCopyShown = false;
+      productVisualizationShown = false;
+      animationStartTime = Date.now();
+      
+      // Check if Socket.IO is connected
+      if (!socket.connected) {
+        console.log("Socket not connected, attempting to connect...");
+        socket.connect();
+      }
+      
+      // Get form data using collectFormData function to ensure all fields are included
+      const data = collectFormData();
+      
+      // Validate product name
+      if (!data.product_name) {
+        alert('Please enter a product name');
+        return;
+      }
+      
+      // Hide both columns initially to ensure proper animation sequence
+      document.querySelector('.output-column').style.display = 'none';
+      document.querySelector('.output-column').classList.remove('slide-in');
+      document.getElementById('visualizationColumn').style.display = 'none';
+      document.getElementById('visualizationColumn').classList.remove('slide-in');
+      
+      console.log("Starting generation with data:", data);
+      
+      // Reset progress bars and show status indicators
+      document.getElementById('text-status-indicator').style.display = 'flex';
+      document.getElementById('text-status').innerText = 'Preparing to generate copy...';
+      document.getElementById('text-status-indicator').querySelector('.spinner-border').style.display = 'inline-block';
+      
+      // Show text progress bar - explicitly reset and show it
+      const textProgressContainer = document.getElementById('text-progress-container');
+      textProgressContainer.classList.remove('d-none'); // Make it visible
+      textProgressContainer.style.display = 'block'; // Explicitly set display to block
+      
+      // Reset progress bar to 0%
+      const textProgressBar = document.getElementById('text-progress-bar');
+      textProgressBar.style.width = '0%';
+      textProgressBar.setAttribute('aria-valuenow', 0);
+      
+      // First, send data to the server immediately
+      try {
+        console.log("Emitting start_generation event with data:", data);
+        socket.emit('start_generation', data, function(acknowledgement) {
+          console.log("Server acknowledged generation request:", acknowledgement);
+        });
+        console.log("Emit completed");
+        
+        // PRECISE TIMING: Show Marketing Copy exactly 1 second after clicking Generate
+        setTimeout(function() {
+          console.log("Showing Marketing Copy at 1 second mark");
+          const outputColumn = document.querySelector('.output-column');
+          outputColumn.style.display = 'block';
+          outputColumn.classList.add('slide-in');
+          marketingCopyShown = true;
+          
+          // Ensure progress container is visible when the column appears
+          textProgressContainer.classList.remove('d-none');
+          textProgressContainer.style.display = 'block';
+          
+          // Double check that status container is properly displayed
+          document.getElementById('status-indicators').style.display = 'block';
+          document.getElementById('status-indicators').classList.remove('fade-out');
+          
+          updateLayoutClass();
+        }, 1000); // 1 second delay for Marketing Copy
+        
+        // If image generation is enabled, show it exactly 2 seconds after clicking Generate
+        if (data.generate_image) {
+          setTimeout(function() {
+            console.log("Showing Product Visualization at 2 second mark");
+            const visualizationColumn = document.getElementById('visualizationColumn');
+            visualizationColumn.style.display = 'block';
+            visualizationColumn.classList.add('slide-in');
+            productVisualizationShown = true;
+            updateLayoutClass();
+            
+            // Setup image progress container and status
+            const progressContainer = document.getElementById('image-progress-container');
+            progressContainer.style.cssText = "display: block !important; background: rgba(230, 230, 230, 0.3); border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 15px;";
+            
+            // Reset progress bar
+            const progressBar = document.getElementById('image-progress-bar');
+            progressBar.style.width = '0%';
+            
+            // Reset image status
+            const imageStatusIndicator = document.getElementById('image-status-indicator');
+            imageStatusIndicator.style.display = 'flex';
+            document.getElementById('image-status').innerText = 'Image is generating...';
+            imageStatusIndicator.querySelector('.spinner-border').style.display = 'inline-block';
+            
+            // Clear previous image and hide download button
+            document.getElementById('imageContainer').innerHTML = '';
+            document.getElementById('downloadBtnContainer').style.display = 'none';
+            
+            // Start progress animation for image generation
+            if (progressInterval) {
+              clearInterval(progressInterval);
+              progressInterval = null;
+            }
+            
+            let progress = 0;
+            progressInterval = setInterval(function() {
+              progress += 0.667; // Increments to reach 100% in 15 seconds
+              
+              // Update progress bar width
+              const progressBar = document.getElementById('image-progress-bar');
+              if (progressBar) {
+                progressBar.style.width = Math.min(progress, 100) + '%';
+              }
+              
+              // Stop at 100%
+              if (progress >= 100) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+              }
+            }, 100); // Update every 100ms for smooth animation
+          }, 2000); // 2 seconds delay for Product Visualization (from initial click)
+        }
+        
+        // Set a timeout to end the animation sequence after 3 seconds
+        setTimeout(function() {
+          animationInProgress = false;
+        }, 3000);
+        
+      } catch (error) {
+        console.error("Error emitting start_generation event:", error);
+        document.getElementById('error-container').innerHTML = 
+          '<div class="alert alert-danger">Error sending data to server: ' + error.message + '</div>';
+      }
+    }
+    
+    // Function to collect form data and emit event - Deprecated, merged into startGeneration
+    /* 
+    function proceedWithGeneration() {
+      // Function content has been merged into startGeneration
+    }
+    */
+    
+    function clearProgress() {
+      // Reset text status
+      document.getElementById('text-status').innerText = "Waiting to start generation...";
+      
+      // Reset text progress container but don't completely hide it
+      const textProgressContainer = document.getElementById('text-progress-container');
+      textProgressContainer.classList.add('d-none');
+      textProgressContainer.style.removeProperty('display'); // Important: remove display property rather than setting it
+      
+      // Reset progress bar to 0%
+      document.getElementById('text-progress-bar').style.width = "0%";
+      document.getElementById('text-progress-bar').setAttribute('aria-valuenow', 0);
+      
+      // Reset image progress and status
+      document.getElementById('image-status').innerText = "Waiting to start image generation...";
+      document.getElementById('image-status-indicator').style.display = 'flex';
+      document.getElementById('image-status-indicator').querySelector('.spinner-border').style.display = 'none';
+      
+      // Reset progress bar to 0%
+      const progressBar = document.getElementById('image-progress-bar');
+      if (progressBar) {
+        progressBar.style.width = "0%";
+      }
+      
+      // Clear progress animation if it's running
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      
+      // Hide copy button and final output
+      document.getElementById('copyBtn').style.display = 'none';
+      document.getElementById('finalOutput').classList.add('d-none');
+      
+      // Reset feedback
+      document.getElementById('feedbackContainer').style.display = 'none';
+      document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+      document.getElementById('imageContainer').innerHTML = '';
+      document.getElementById('downloadBtnContainer').style.display = 'none';
+      
+      // Clear final text
+      document.getElementById('finalText').innerText = '';
+      document.getElementById('error-container').innerHTML = '';
+      
+      // Remove animation classes to reset
+      document.querySelector('.output-column').classList.remove('slide-in');
+      document.getElementById('visualizationColumn').classList.remove('slide-in');
+      
+      // Reset animation flags
+      animationInProgress = false;
+      marketingCopyShown = false;
+      productVisualizationShown = false;
+    }
+    
+    // Function to collect all form data
+    function collectFormData() {
+      // Create an object to hold all form data
+      const data = {
+        product_name: document.getElementById('product_name').value.trim(),
+        product_details: document.getElementById('product_details').value.trim(),
+        extra_instructions: document.getElementById('extra_instructions').value.trim(),
+        keywords: document.getElementById('keywords').value.trim(),
+        usps: document.getElementById('usps').value.trim(),
+        viral: document.querySelector('input[name="viral"]:checked')?.value || 'No',
+        generate_image: document.getElementById('image_toggle').checked // Fixed: renamed from image_toggle to generate_image
+      };
+      
+      // Add dropdown values, checking for "Other" selections
+      const dropdowns = ['language', 'tone', 'audience', 'platform', 'cta_style'];
+      
+      dropdowns.forEach(field => {
+        const select = document.getElementById(field);
+        if (!select) return;
+        
+        if (select.value === 'Other') {
+          const otherInput = document.getElementById(field + '_other');
+          data[field] = otherInput && otherInput.value.trim() ? otherInput.value.trim() : 'Other';
+        } else {
+          data[field] = select.value;
+        }
+      });
+      
+      console.log('Form data collected:', data);
+      return data;
+    }
+    
+    // Display final generated text and show copy button
+    function displayFinalOutput(text, brandVoice) {
+      // Fade out status indicators and fade in results
+      const statusIndicators = document.getElementById("status-indicators");
+      statusIndicators.classList.add('fade-out');
+      
+      // Show final output container
+      const finalOutput = document.getElementById("finalOutput");
+      finalOutput.classList.remove("d-none");
+      finalOutput.classList.add('fade-in');
+      
+      // Format and display the text
+      let safeText = escapeHTML(text);
+      safeText = safeText.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+      document.getElementById("finalText").innerHTML = safeText;
+      
+      // Show copy button once text is generated
+      document.getElementById('copyBtn').style.display = 'flex';
+      
+      // CRUCIAL FIX: Keep the progress bar container available for next use
+      // Reset the progress bar without removing its container from the DOM flow
+      const textProgressBar = document.getElementById('text-progress-bar');
+      textProgressBar.style.width = '0%';
+      
+      // Keep the container in DOM flow but just hide it visually - NEVER set display: none
+      const textProgressContainer = document.getElementById('text-progress-container');
+      textProgressContainer.classList.add('d-none');
+      textProgressContainer.style.removeProperty('display'); // Important: Don't set display property at all
+      
+      // If image URL is provided immediately, add it
+      if (brandVoice && brandVoice.image_url) {
+        addImageToOutput(brandVoice.image_url);
+      }
+    }
+
+    // New function to add image to the output
+    function addImageToOutput(image_url) {
+      // Check if an image already exists to avoid duplicates
+      if (document.querySelector('.generated-image')) return;
+      
+      // Show the image container
+      const imageContainer = document.getElementById("imageContainer");
+      imageContainer.style.display = "block";
+      
+      let img = document.createElement("img");
+      img.src = image_url;
+      img.classList.add("generated-image");
+      
+      // Create a container with enhanced styling
+      let imgContainer = document.createElement("div");
+      imgContainer.classList.add("generated-image-container");
+      imgContainer.appendChild(img);
+      
+      // Add the image container with fade-in animation
+      imageContainer.appendChild(imgContainer);
+      imgContainer.classList.add("fade-in");
+      
+      // Show download button
+      document.getElementById('downloadBtnContainer').style.display = 'block';
+    }
+
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/\'/g, '&#39;');
+    }
+
+    // Function to show or hide custom input based on dropdown value
+    function checkOther(selectElement, customInputId) {
+      if (selectElement.value === "Other") {
+        document.getElementById(customInputId).style.display = "block";
+      } else {
+        document.getElementById(customInputId).style.display = "none";
+      }
+    }
+
+    // Initialize the layout based on the image toggle state when the page loads
+    document.addEventListener("DOMContentLoaded", function() {
+      const imageToggle = document.getElementById("image_toggle");
+      const visualizationColumn = document.getElementById("visualizationColumn");
+      
+      // Set initial state - neither column is visible at startup
+      visualizationColumn.style.display = 'none';
+      document.querySelector('.output-column').style.display = 'none';
+      updateLayoutClass();
+
+      // Initialize Bootstrap tooltips
+      try {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        console.log("Tooltips initialized");
+      } catch (e) {
+        console.warn("Could not initialize tooltips:", e);
+      }
+      
+      // Function to update layout class based on visible columns
+      function updateLayoutClass() {
+        const mainContainer = document.querySelector('.main-container');
+        const specsColumn = document.querySelector('.specs-column');
+        const outputColumn = document.querySelector('.output-column');
+        const visualizationColumn = document.getElementById('visualizationColumn');
+        const intro = document.querySelector('.intro');
+        const navContainer = document.querySelector('.navbar .container');
+        
+        if (visualizationColumn.style.display === 'none') {
+          // Two column layout - centered
+          mainContainer.classList.remove('three-column-layout');
+          mainContainer.classList.add('two-column-layout');
+          specsColumn.classList.add('col-md-6', 'col-lg-6');
+          outputColumn.classList.add('col-md-6', 'col-lg-6');
+          intro.classList.remove('three-column');
+          intro.classList.add('two-column');
+          navContainer.classList.remove('three-column');
+          navContainer.classList.add('two-column');
+        } else {
+          // Three column layout - full width
+          mainContainer.classList.remove('two-column-layout');
+          mainContainer.classList.add('three-column-layout');
+          specsColumn.classList.remove('col-md-6', 'col-lg-6');
+          outputColumn.classList.remove('col-md-6', 'col-lg-6');
+          intro.classList.remove('two-column');
+          intro.classList.add('three-column');
+          navContainer.classList.remove('two-column');
+          navContainer.classList.add('three-column');
+        }
+      }
+      
+      // Also define updateLayoutClass in the global scope so it can be called elsewhere
+      window.updateLayoutClass = updateLayoutClass;
+      
+      // Highlight dropdown fields to make them more noticeable
+      const dropdownLabels = [
+        document.querySelector('label[for="language"]'),
+        document.querySelector('label[for="tone"]'),
+        document.querySelector('label[for="audience"]'),
+        document.querySelector('label[for="platform"]'),
+        document.querySelector('label[for="cta_style"]')
+      ];
+      
+      // Sequentially highlight each dropdown label
+      dropdownLabels.forEach((label, index) => {
+        setTimeout(() => {
+          if (label) {
+            label.style.transition = 'color 0.3s ease';
+            label.style.color = '#000';
+            label.style.fontWeight = '600';
+            
+            setTimeout(() => {
+              label.style.color = '';
+              label.style.fontWeight = '';
+            }, 700);
+          }
+        }, index * 300);
+      });
+      
+      // Add click event listeners to all selects to highlight them when opened
+      const selectElements = document.querySelectorAll('.form-select');
+      selectElements.forEach(select => {
+        select.addEventListener('mousedown', function() {
+          this.style.boxShadow = '0 0 0 3px rgba(80, 80, 80, 0.1)';
+          this.style.borderColor = 'rgba(80, 80, 80, 0.3)';
+        });
+        
+        select.addEventListener('blur', function() {
+          this.style.boxShadow = '';
+          this.style.borderColor = '';
+        });
+      });
+      
+      // Initialize copy button functionality
+      const copyBtn = document.getElementById('copyBtn');
+      const successMessage = document.querySelector('.copy-success');
+      
+      copyBtn.addEventListener('click', function() {
+        const textToCopy = document.getElementById('finalText').innerText;
+        navigator.clipboard.writeText(textToCopy).then(function() {
+          successMessage.classList.add('show');
+          setTimeout(function() {
+            successMessage.classList.remove('show');
+          }, 1500);
+        }, function(err) {
+          console.error('Could not copy text: ', err);
+        });
+      });
+      
+      // Initialize dark mode toggle
+      const themeToggle = document.getElementById('themeToggle');
+      
+      // Check for saved theme preference
+      const savedTheme = localStorage.getItem('theme');
+      console.log("Theme toggle in second DOMContentLoaded: ", themeToggle);
+      console.log("Using the theme toggle from initializeFormHandlers function");
+      
+      themeToggle.addEventListener('click', function() {
+        console.log("Theme toggle clicked in second DOMContentLoaded");
+        document.body.classList.toggle('dark-mode');
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        
+        // Save theme preference
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      });
+      
+      // Sample button functionality
+      const sampleBtn = document.getElementById('sampleBtn');
+      sampleBtn.addEventListener('click', function() {
+        // Populate form with sample data
+        document.getElementById('product_name').value = 'EcoFlow Pro Water Bottle';
+        document.getElementById('product_details').value = 'Insulated stainless steel water bottle, 24oz capacity, keeps drinks hot for 12 hours or cold for 24 hours. Made from recycled materials with leak-proof lid and built-in filter.';
+        document.getElementById('language').value = 'English';
+        document.getElementById('tone').value = 'Professional';
+        document.getElementById('keywords').value = 'eco-friendly, insulated, stainless steel, water bottle, sustainable';
+        document.getElementById('audience').value = 'Professionals';
+        document.getElementById('platform').value = 'Website';
+        document.getElementById('usps').value = 'Temperature retention, eco-friendly materials, built-in filter system';
+        document.getElementById('cta_style').value = 'Value focused';
+        document.getElementById('viral_yes').checked = true;
+        document.getElementById('extra_instructions').value = 'Emphasize environmental benefits and premium quality';
+        document.getElementById('image_toggle').checked = true;
+        
+        // Trigger auto-resize for all textareas
+        document.querySelectorAll('textarea.form-control').forEach(textarea => {
+          textarea.style.height = 'auto';
+          textarea.style.height = (textarea.scrollHeight) + 'px';
+        });
+        
+        // Just set the toggle state - don't show any columns
+        imageGenerationEnabled = true;
+        
+        // Make sure both output columns are hidden - they'll show in sequence after Generate is clicked
+        document.querySelector('.output-column').style.display = 'none';
+        document.getElementById('visualizationColumn').style.display = 'none';
+        updateLayoutClass();
+      });
+      
+      // Download button for visualization
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        // Find the image
+        const img = document.querySelector('.generated-image');
+        if (img) {
+          // Create a temporary link
+          const link = document.createElement('a');
+          link.href = img.src;
+          link.download = 'product-visualization.png';
+          link.click();
+        } else {
+          alert('No image available to download');
+        }
+      });
+      
+      // Feedback stars functionality
+      const stars = document.querySelectorAll('.star');
+      stars.forEach(star => {
+        star.addEventListener('click', function() {
+          const value = this.getAttribute('data-value');
+          
+          // Reset all stars
+          stars.forEach(s => s.classList.remove('active'));
+          
+          // Activate clicked star and all below it
+          stars.forEach(s => {
+            if (s.getAttribute('data-value') <= value) {
+              s.classList.add('active');
+            }
+          });
+          
+          // Show thank you message
+          document.querySelector('.feedback-thanks').classList.remove('d-none');
+          
+          // Save the feedback rating with product name and timestamp to local storage
+          const productName = document.getElementById('product_name').value;
+          const timestamp = new Date().toISOString();
+          
+          // Get existing ratings or create new array
+          const existingRatings = JSON.parse(localStorage.getItem('product_ratings') || '[]');
+          
+          // Add new rating
+          existingRatings.push({
+            product: productName,
+            rating: value,
+            timestamp: timestamp
+          });
+          
+          // Save back to local storage
+          localStorage.setItem('product_ratings', JSON.stringify(existingRatings));
+          
+          // Log the rating (for debugging)
+          console.log('User rated: ' + value + ' stars');
+          console.log('Saved ratings:', existingRatings);
+        });
+      });
+    });
+
+    // Add event listener to the image toggle checkbox to update state without showing/hiding columns
+    document.getElementById("image_toggle").addEventListener("change", function() {
+      // Only store the state - don't actually show/hide columns yet
+      imageGenerationEnabled = this.checked;
+      console.log("Image generation enabled: " + this.checked);
+      
+      // Don't change column visibility - that happens only when Generate is clicked
+      if (typeof updateLayoutClass === 'function') {
+        updateLayoutClass();
+      }
+    });
+
+    // Add auto-resize functionality for textareas
+    document.querySelectorAll('textarea.form-control').forEach(textarea => {
+      textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+      });
+    });
+
+    // Update datetime display
+    function updateDateTime() {
+      const now = new Date();
+      const options = { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
+      };
+      const dateTimeString = now.toLocaleDateString('en-US', options).replace(',', '  ');
+      document.getElementById('datetimeDisplay').textContent = dateTimeString;
+    }
+
+    // Update datetime every minute
+    updateDateTime();
+    setInterval(updateDateTime, 60000);
+
+    // Update layout when columns change
+    function updateLayoutClass() {
+      const mainContainer = document.querySelector('.main-container');
+      const specsColumn = document.querySelector('.specs-column');
+      const outputColumn = document.querySelector('.output-column');
+      const visualizationColumn = document.getElementById('visualizationColumn');
+      const intro = document.querySelector('.intro');
+      const navContainer = document.querySelector('.navbar .container');
+      
+      if (visualizationColumn.style.display === 'none') {
+        // Two column layout - centered
+        mainContainer.classList.remove('three-column-layout');
+        mainContainer.classList.add('two-column-layout');
+        specsColumn.classList.add('col-md-6', 'col-lg-6');
+        outputColumn.classList.add('col-md-6', 'col-lg-6');
+        intro.classList.remove('three-column');
+        intro.classList.add('two-column');
+        navContainer.classList.remove('three-column');
+        navContainer.classList.add('two-column');
+      } else {
+        // Three column layout - full width
+        mainContainer.classList.remove('two-column-layout');
+        mainContainer.classList.add('three-column-layout');
+        specsColumn.classList.remove('col-md-6', 'col-lg-6');
+        outputColumn.classList.remove('col-md-6', 'col-lg-6');
+        intro.classList.remove('two-column');
+        intro.classList.add('three-column');
+        navContainer.classList.remove('two-column');
+        navContainer.classList.add('three-column');
+      }
+    }
+
+    // Helper function to update connection tooltip
+    function updateConnectionTooltip(elementId, text) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      // Destroy existing tooltip
+      const tooltipInstance = bootstrap.Tooltip.getInstance(element);
+      if (tooltipInstance) {
+        tooltipInstance.dispose();
+      }
+      
+      // Update title attributes
+      element.setAttribute('title', text);
+      element.setAttribute('data-bs-original-title', text);
+      
+      // Create new tooltip
+      new bootstrap.Tooltip(element);
+    }
+
+    // Function to update connection status indicator
+    function updateConnectionStatus(status) {
+      const statusIndicator = document.getElementById('connectionStatus');
+      if (!statusIndicator) return;
+      
+      // Remove all current status classes
+      statusIndicator.classList.remove('online', 'offline', 'connecting');
+      
+      // Add the new status class
+      statusIndicator.classList.add(status);
+      
+      // Set new tooltip text based on status
+      let tooltipText = '';
+      switch(status) {
+        case 'online':
+          tooltipText = 'Connected to server';
+          statusIndicator.style.color = '#28a745'; // Green
+          break;
+        case 'offline':
+          tooltipText = 'Disconnected from server';
+          statusIndicator.style.color = '#dc3545'; // Red
+          break;
+        case 'connecting':
+          tooltipText = 'Connecting to server...';
+          statusIndicator.style.color = '#ffc107'; // Yellow/Amber
+          break;
+      }
+      
+      // Update tooltip
+      updateConnectionTooltip('connectionStatus', tooltipText);
+      
+      // Remove any existing connection error messages when connected
+      if (status === 'online') {
+        document.getElementById('error-container').innerHTML = '';
+      }
+    }
+
+    // Function to toggle dark mode
+    function toggleDarkMode() {
+      console.log("toggleDarkMode function called");
+      document.body.classList.toggle('dark-mode');
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      
+      // Save theme preference
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    }
+
+    // When the page loads, check for saved theme preference
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+      }
+    });
+
+    // Function to reconnect the socket
+    function reconnectSocket() {
+      console.log("Attempting to reconnect socket manually");
+      document.getElementById('error-container').innerHTML = 
+        '<div class="alert alert-info">Attempting to reconnect...</div>';
+      
+      // First disconnect if already connected
+      if (socket) {
+        socket.disconnect();
+      }
+      
+      // Then initiate a new connection
+      if (verifySocketIO()) {
+        initSocketIO();
+      }
+      
+      // Update UI to show connecting status
+      updateConnectionStatus('connecting');
+    }
+
+    // Reset function
+    function resetApp() {
+      // This function will remain for backward compatibility
+      restartApp();
+    }
+    
+    // Restart function - refreshes the page
+    function restartApp() {
+      // Refresh the page
+      window.location.reload();
+    }
+
+    // Toast notification system
+    function showToast(message, type = 'info') {
+      // Create toast container if it doesn't exist
+      let toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+        document.body.appendChild(toastContainer);
+      }
+      
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.className = `toast-notification toast-${type}`;
+      toast.style.cssText = 'background: rgba(50, 50, 50, 0.9); color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); font-size: 14px; max-width: 300px; backdrop-filter: blur(10px);';
+      toast.innerHTML = message;
+      
+      // Add to container
+      toastContainer.appendChild(toast);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => {
+          toastContainer.removeChild(toast);
+        }, 500);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
